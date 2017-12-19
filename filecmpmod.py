@@ -13,6 +13,7 @@ Functions:
 import os
 import stat
 from itertools import filterfalse
+import datetime
 
 __all__ = ['clear_cache', 'cmp', 'dircmp', 'cmpfiles', 'DEFAULT_IGNORES']
 
@@ -22,6 +23,11 @@ BUFSIZE = 8*1024
 DEFAULT_IGNORES = [
     'RCS', 'CVS', 'tags', '.git', '.hg', '.bzr', '_darcs', '__pycache__']
 
+def to_file(list, file):
+    for item in list:
+        file.write('\t' + item + '\n')
+    file.write('\n\n')
+    
 def clear_cache():
     """Clear the filecmp cache."""
     _cache.clear()
@@ -73,9 +79,9 @@ def _sig(st):
             st.st_mtime)
 
 def _is_similar(s1, s2):
-	print(s1)
-	print(s2)
-	return (s1/s2 >= 1) and (s1/s2 <= 1) # +-20%
+    print('Sizes: ', s1, ' byte and ', s2, ' byte')
+    print('Difference: ', (100 - s1/s2*100),' %', 'same? ', (s1/s2 >= 0.8) and (s1/s2 <= 1.25))
+    return (s1/s2 >= 0.8) and (s1/s2 <= 1.25) # +-20%
 			
 def _do_cmp(f1, f2):
     bufsize = BUFSIZE
@@ -216,7 +222,7 @@ class dircmp:
             print('Only in', self.right, ':', self.right_only)
         if self.same_files:
             self.same_files.sort()
-            print('Identical files :', self.same_files)
+            print('Similar files :', self.same_files)
         if self.diff_files:
             self.diff_files.sort()
             print('Differing files :', self.diff_files)
@@ -229,18 +235,50 @@ class dircmp:
         if self.common_funny:
             self.common_funny.sort()
             print('Common funny cases :', self.common_funny)
-
+            
+    def report_mod(self, file):
+        file.write('\nCOMPARISON OF FILES BETWEEN FOLDERS:\n\n')
+        file.write(self.left + '\n and \n' + self.right + '\n')
+        if self.left_only:
+            self.left_only.sort()
+            file.write('\nOnly in '+ self.left + ':\n')
+            to_file(self.left_only, file)
+        if self.right_only:
+            self.right_only.sort()
+            file.write('\nOnly in '+ self.right + ':\n')
+            to_file(self.right_only, file)
+        if self.same_files:
+            self.same_files.sort()
+            file.write('\nSimilar files :\n')
+            to_file(self.same_files, file)
+        if self.diff_files:
+            self.diff_files.sort()
+            file.write('\nDiffering files :\n')
+            to_file(self.diff_files, file)
+        if self.funny_files:
+            self.funny_files.sort()
+            file.write('\nTrouble with common files :\n')
+            to_file(self.funny_files, file)
+        if self.common_dirs:
+            self.common_dirs.sort()
+            file.write('\nCommon subdirectories :\n')
+            to_file(self.common_dirs, file)
+        if self.common_funny:
+            self.common_funny.sort()
+            file.write('\nCommon funny cases :\n')
+            to_file(self.common_funny, file)
+	
     def report_partial_closure(self): # Print reports on self and on subdirs
         self.report()
         for sd in self.subdirs.values():
             print()
             sd.report()
 
-    def report_full_closure(self): # Report on self and subdirs recursively
-        self.report()
+    def report_full_closure(self, file): # Report on self and subdirs recursively
+        self.report_mod(file)
         for sd in self.subdirs.values():
             print()
-            sd.report_full_closure()
+            sd.report_full_closure(file)
 
     methodmap = dict(subdirs=phase4,
                      same_files=phase3, diff_files=phase3, funny_files=phase3,
