@@ -1,9 +1,5 @@
 import xml.etree.ElementTree as etree
 import datetime
-#from filecmp import dircmp
-from filecmpmod import dircmp
-import os
-import shutil
 
 version="4.2"
 scriptname="nub"
@@ -64,23 +60,3 @@ def zips(filename):
         libelle = taxonomy.get('libelle')
         zip = taxonomy.find('zip').text
         f.write ('{:_<32} \t{}\n'.format(libelle, zip))
-	
-def dirdiff(filename):
-    f = output(filename, 'dirdiff')
-    #XVS nye
-    #dir1 = r'''V:\Log\13\XVS nye'''
-    #dir2 = r'''V:\Test-Package2017-12-07\Nye13\XVS-TEST'''
-    
-    #XVS gamle
-    dir1= r'''S:\XVSData\output\XVS gamle'''
-    dir2= r'''V:\Test-Package2017-12-07\Gamle124\XVS-TEST'''
-    
-    # XRT nye
-    #dir1= r'''V:\Log\14\XRT nye'''
-    #dir2= r'''V:\Test-Package2017-12-07\Nye13\XRT-TEST'''
-    
-    # XRT gamle
-    #dir1= r'''V:\Log\14\XRT gamle'''
-    #dir2= r'''V:\Test-Package2017-12-07\Gamle124\XRT-TEST'''
-    comparison = dircmp(dir1, dir2)
-    comparison.report_full_closure(f)

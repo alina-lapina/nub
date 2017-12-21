@@ -360,6 +360,7 @@ def interface():
     #else:
     print("Args is ok: ", args[0], args[1], args[2])
     dirdiff(args[0], args[1], args[2])
+    print("\n\n\nComparing is done. \n\n Report " + args[2] + ".txt is generated locally.")
 
 if __name__ == '__main__':
     interface()
